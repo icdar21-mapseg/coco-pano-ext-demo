@@ -8,8 +8,8 @@ pip install coco-pano-ext-demo
 
 ## COCO Metrics in a bipartite graph framework
 
-Even if the primary purpose of the COCO is to score segmentations, we use a graph framework and so we aim at scoring a bipartite graph P ↔ Q with degree 1 (1 node in P is paired with at most 1 node in Q).
-The edge are weighted by shape matching metric the IoU. The figure below shows two segmentations and the corresponding bipartite graph to assess.
+Even if the primary purpose of the COCO is to score segmentations, we use a graph framework, and so we aim at scoring a bipartite graph P ↔ Q with degree 1 (1 node in P is paired with at most 1 node in Q).
+The edge are weighted by a shape matching metric: the IoU. The figure below shows two segmentations and the corresponding bipartite graph to assess.
 
 <img src="doc/matching.png" width="50%"/> <img src="doc/bipartite-5.png" width="40%" />
 
@@ -38,7 +38,7 @@ print(
         
 
 
-## Ploting Precision/Recall and F-Score Curves
+## Plotting Precision/Recall and F-Score Curves
 
 We first need to output the precision/recall table of the system as the IoU tolerance threshold increases. This is mostly the same code as previously but with the extra parameter `output_scores=True`.   
 
@@ -121,7 +121,7 @@ COCO_plot(score_table)
 ![png](README_files/README_7_0.png)
 
 
-## COCO metrics from segmentation and labelmaps
+## COCO metrics from segmentation images and labelmaps
 
 While the evaluation framework is graph-based, the function enables assessing directly the quality of segmentations from images. You can provide either:
 
@@ -202,8 +202,3 @@ show_precision_recall(t = 0.8)
 
 ![png](README_files/README_12_0.png)
 
-
-
-```python
-
-```
