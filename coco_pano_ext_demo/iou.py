@@ -91,8 +91,8 @@ def compute_bipartite_edge_weigths(intersection_matrix: np.array, mode="jaccard"
         area_P_normalizer = areas_Q[best_match_P]
         area_Q_normalizer = areas_P[best_match_Q]
 
-    weights_P = np.devide(area_P_Inter_BestMatch, area_P_normalizer, where = area_P_normalizer > 0)
-    weights_Q = np.devide(area_Q_Inter_BestMatch, area_Q_normalizer, where = area_Q_normalizer > 0)
+    weights_P = np.divide(area_P_Inter_BestMatch, area_P_normalizer, where = area_P_normalizer > 0)
+    weights_Q = np.divide(area_Q_Inter_BestMatch, area_Q_normalizer, where = area_Q_normalizer > 0)
 
     return weights_P, weights_Q
 

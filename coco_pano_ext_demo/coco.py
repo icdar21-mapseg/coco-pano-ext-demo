@@ -3,6 +3,7 @@ from skimage.measure import label as labelize
 import pandas as pd
 import matplotlib.pyplot as plt
 from . import iou
+from .prec_recall_map import colorize_regions
 
 
 
@@ -36,15 +37,6 @@ def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, output_score
     Returns:
         tuple: The triplet (Panoptic Quality, Segmentation Quality, Recognition Quality, Scores_Dataframe)
     """    
-
-    """
-    Compute the COCO metric of one segmentation vs another segmentation
-
-    args
-    ----
-
-    plot: Path to output file for plot, or `None` if deactivated.
-    """
     A = np.asarray(A)
     B = np.asarray(B)
 
@@ -111,6 +103,39 @@ def COCO_plot(df: pd.DataFrame, ax=None):
 
 
 
+def precision_recall_maps(groundtruth: np.ndarray, contender: np.ndarray, mode=None, ignore_zero=True, lower_bound=0.5):
+    """[summary]
+
+    Args:
+        groundtruth (np.ndarray): The groundtruth segmentation or labelmap
+        contender (np.ndarray): The segmentation or labelmap to evaluate
+        mode (str, optional): None, "segmentation" or "labelmap". Defaults to None and the mode is deduced from image types.
+        ignore_zero (bool, optional): [description]. Defaults to True.
+        lower_bound (float, optional): Must be in [0,1]. The center of the colormap (threshold of acceptance)
+    """
+
+    A = np.asarray(groundtruth)
+    B = np.asarray(contender)
+
+    if mode not in {None, "segmentation", "labelmap"}:
+        raise ValueError(f"Invalid mode '{mode}'.")
+
+    if not mode:
+        modeA, modeB = _deduce_mode(A, B)
+        assert modeA in {"segmentation", "labelmap"}
+        assert modeB in {"segmentation", "labelmap"}
+    else:
+        modeA = modeB = mode
+
+
+    if modeA == "segmentation": A = _compute_labelmap(A)
+    if modeB == "segmentation": B = _compute_labelmap(B)
+
+    wA, wB = _compute_iou(A, B)
+    recall = colorize_regions(A, wA, lower_bound)
+    precision = colorize_regions(B, wB, lower_bound)
+    return precision, recall
+
 
 def _deduce_mode_1(A):
     label_types = (np.uint16, np.int16, np.uint32, np.int32, np.uint64, np.int64)
@@ -153,5 +178,5 @@ def _compute_labelmap(A):
 
 def _compute_iou(A, B):
     hist_inter_2d = iou.intersections(A, B)
-    iou_a, iou_b = iou.compute_IoUs(hist_inter_2d)
+    iou_a, iou_b = iou.compute_bipartite_edge_weigths(hist_inter_2d, mode="jaccard")
     return iou_a, iou_b
