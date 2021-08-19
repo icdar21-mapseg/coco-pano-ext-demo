@@ -7,7 +7,7 @@ from .prec_recall_map import colorize_regions
 
 
 
-def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, output_scores = False):
+def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, output_scores = False, pairing_threshold=0.5):
     """
     
     Compute the COCO Panoptic metric in a bipartite graph (A ↔ B) with degree 1.
@@ -30,7 +30,7 @@ def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, output_score
                                   mode from inputs.
         ignore_zero (bool, optional): Ignore the label (node) 0 which is usually the background. Defaults to True.
         output_scores (bool, optional): Output the dataframe with IoU and F-Scores as the last item of the tuple returned.
-
+        iou_threshold (float, optional): In [0.5 - 1] The minimum overlap rate (IoU) that components should get to be paired
     Raises:
         ValueError: If mode is invalid or unable to deduce
     
@@ -42,6 +42,9 @@ def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, output_score
 
     if mode not in {None, "segmentation", "labelmap", "iou_array"}:
         raise ValueError(f"Invalid mode '{mode}'.")
+
+    if not (0 < pairing_threshold < 1):
+        raise ValueError(f"Invalid IoU threshold '{pairing_threshold}'.")
 
     if not mode:
         modeA, modeB = _deduce_mode(A, B)
@@ -66,7 +69,7 @@ def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, output_score
         print("Warning: empty prediction. Setting scores to 0 and skipping plot generation.")
         return 0., 0., 0.
 
-    df = iou.compute_matching_scores(A, B)
+    df = iou.compute_matching_scores(A, B, pairing_threshold)
     #if plot:
     #    iou.plot_scores(df, out=plot)
 
@@ -78,13 +81,16 @@ def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, output_score
     return COCO_PQ, COCO_SQ, COCO_RQ, df
 
 
-def COCO_plot(df: pd.DataFrame, ax=None):
+def COCO_plot(df: pd.DataFrame, ax=None, lower_bound = 0.5):
     """[summary]
 
     Args:
         df (pd.DataFrame): The dataframe returned by the COCO function
         ax (Matplotlib.Axes, optional): Optional axis where to draw the figure. Defaults to None.
     """
+    if df.empty:
+        raise ValueError("Empty dataframe !")
+
     # sns.set()
     df = df[
         ["IoU", "Precision", "Recall", "F-score"]
@@ -98,7 +104,7 @@ def COCO_plot(df: pd.DataFrame, ax=None):
         ax = plt.gca()
 
     df.plot(ax=ax, marker="o", drawstyle="steps-pre")
-    ax.set_xlim(0.5, 1)
+    ax.set_xlim(lower_bound, 1)
     ax.set_ylim(0, 1)
 
 

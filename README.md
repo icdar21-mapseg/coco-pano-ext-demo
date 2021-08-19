@@ -125,8 +125,8 @@ COCO_plot(score_table)
 
 While the evaluation framework is graph-based, the function enables assessing directly the quality of segmentations from images. You can provide either:
 
-* 2D labelmaps: images with one label per pixel (background should have label 0 to be ignored afterward with the parameter `ignore_zero=True`
-* 2D binary images: images where the 4-connected regions are in white and separated by 8-connected black boundaries
+* 2D labelmaps: images with labels where each component is labeled by integers (the background component should have label 0 to be ignored afterward with the parameter `ignore_zero=True`).
+* 2D binary images: images with values 0 and 1, where the 4-connected regions are in white and separated by 8-connected black boundaries.
 
 <img src="doc/296_5000_6500_5500_7000_gt.png" width="256px" /> <img src="doc/296_5000_6500_5500_7000_pred.png" width="256px" />
 
@@ -145,13 +145,53 @@ P = imread("doc/296_5000_6500_5500_7000_pred.png", as_gray=True)
 T = np.asarray(T < 0.5)
 P = np.asarray(P < 0.5)
 PQ, SQ, RQ, score_table = COCO(P, T, ignore_zero=True, output_scores=True)
+print(
+    f"""
+    The Panoptic Quality is: {PQ}
+    The Segmentation Quality is: {SQ}
+    The Recognition Quality is: {RQ}
+    """
+    )
 COCO_plot(score_table)
 
 
 ```
 
+    
+        The Panoptic Quality is: 0.443018795575248
+        The Segmentation Quality is: 0.886037591150496
+        The Recognition Quality is: 0.5
+        
 
-![png](README_files/README_9_0.png)
+
+
+![png](README_files/README_9_1.png)
+
+
+It is also possible to be more restrictive about the "matching rate". IoU=50% might be not restrictive enough, and you may not want to consider these pairings. The parameter ``pairing_threshold`` allows filtering out edges that do not meet the required matching quality.    
+
+
+```python
+PQ, SQ, RQ, score_table = COCO(P, T, ignore_zero=True, output_scores=True, pairing_threshold=0.8)
+print(
+    f"""
+    The Panoptic Quality is: {PQ}
+    The Segmentation Quality is: {SQ}
+    The Recognition Quality is: {RQ}
+    """
+    )
+COCO_plot(score_table, lower_bound=0.8)
+```
+
+    
+        The Panoptic Quality is: 0.36671881695056546
+        The Segmentation Quality is: 0.9334660795105303
+        The Recognition Quality is: 0.39285714285714285
+        
+
+
+
+![png](README_files/README_11_1.png)
 
 
 ## Precision/Recall Maps
@@ -191,7 +231,7 @@ show_precision_recall(t = 0.5)
 ```
 
 
-![png](README_files/README_11_0.png)
+![png](README_files/README_13_0.png)
 
 
 
@@ -200,5 +240,5 @@ show_precision_recall(t = 0.8)
 ```
 
 
-![png](README_files/README_12_0.png)
+![png](README_files/README_14_0.png)
 
