@@ -1,7 +1,5 @@
 import numpy as np
-from skimage.measure import label as labelize
 import pandas as pd
-import matplotlib.pyplot as plt
 from . import iou
 from .prec_recall_map import colorize_regions
 
@@ -100,8 +98,8 @@ def COCO_plot(df: pd.DataFrame, ax=None, lower_bound = 0.5):
     df.iloc[-1] = [0, 0, 0]
 
     if ax is None:
-        plt.figure(figsize=(6, 6))
-        ax = plt.gca()
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(6, 6))
 
     df.plot(ax=ax, marker="o", drawstyle="steps-pre")
     ax.set_xlim(lower_bound, 1)
@@ -178,6 +176,7 @@ def _deduce_mode(A, B):
 
 
 def _compute_labelmap(A):
+    from skimage.measure import label as labelize
     A = labelize(A.astype(np.uint8), connectivity=1)  # , ltype=cv2.CV_16U
     return A
 
